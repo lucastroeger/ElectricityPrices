@@ -1,0 +1,108 @@
+﻿@model ElectricityPricesApp.Models.ElectricityPrices
+
+<!-- Date range selection form -->
+<form method="post" asp-action="Index">
+    <div class="form-group">
+        <label for="StartDate">Start Date & Time:</label>
+        <input type="datetime-local" id="StartDate" name="StartDate" class="form-control" value="@ViewData["StartDate"]" required />
+    </div>
+
+    <div class="form-group">
+        <label for="EndDate">End Date & Time:</label>
+        <input type="datetime-local" id="EndDate" name="EndDate" class="form-control" value="@ViewData["EndDate"]" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Fetch Prices</button>
+</form>
+
+
+@* Chart showing price for electricity *@
+<div style="width: 100%; margin: auto;">
+    <h2>📈 Electricity Prices in Germany </h2>
+
+    <!-- Chart Placeholder -->
+    <div style="width: 100%; height: 400px;">
+        <canvas id="priceChart"></canvas>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById('priceChart').getContext('2d');
+
+        // Retrieve the times, dates, and prices
+        const times = @Html.Raw(Json.Serialize(Model.Prices.Select(p => p.Timestamp.ToString("HH:mm")).ToList()));
+        const dates = @Html.Raw(Json.Serialize(Model.Prices.Select(p => p.Timestamp.ToString("yyyy-MM-dd")).ToList()));
+        const prices = @Html.Raw(Json.Serialize(Model.Prices.Select(p => p.Price).ToList()));
+
+        // Create a new chart
+        new Chart(ctx, {
+            type: 'line',  // Line chart
+            data: {
+                labels: times,  // Use only the time for the primary x-axis
+                datasets: [{
+                    label: 'Electricity Price (€/MWh)',
+                    data: prices,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    // Primary X-Axis for Time (HH:mm)
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (UTC)'
+                        },
+                        ticks: {
+                            maxRotation: 90,
+                            minRotation: 45
+                        },
+                    },
+                    // Secondary X-Axis for Dates (yyyy-MM-dd)
+                    x2: {
+                        position: 'bottom', // Position it at the bottom
+                        grid: {
+                            drawOnChartArea: false  // Disable grid lines for this axis
+                        },
+                        ticks: {
+                            // Show every 144th date tick
+                            callback: function(value, index, values) {
+                                // Show the date only for every 144th tick
+                                if (index % 144 === 0) {
+                                    return dates[index];
+                                }
+                                return ''; // Return empty string for other dates
+                            },
+                            maxRotation: 90,
+                            minRotation: 45
+                        },
+                        title: {
+                            display: false  // No need to display title for the second x-axis
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Price (€/MWh)'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
