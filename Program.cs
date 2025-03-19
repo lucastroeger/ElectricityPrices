@@ -3,6 +3,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient<SmardApiService>();
+builder.Services.AddHttpClient<EntsoEApiService>();
 
 var app = builder.Build();
 
