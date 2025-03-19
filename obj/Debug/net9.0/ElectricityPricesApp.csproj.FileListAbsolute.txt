@@ -95,3 +95,4 @@
 /Users/lucastroeger/RiderProjects/ElectricityPricesApp/obj/Debug/net9.0/ElectricityPricesApp.pdb
 /Users/lucastroeger/RiderProjects/ElectricityPricesApp/obj/Debug/net9.0/ElectricityPricesApp.genruntimeconfig.cache
 /Users/lucastroeger/RiderProjects/ElectricityPricesApp/obj/Debug/net9.0/ref/ElectricityPricesApp.dll
+/Users/lucastroeger/RiderProjects/ElectricityPricesApp/obj/Debug/net9.0/ElectricityPricesApp.sourcelink.json
