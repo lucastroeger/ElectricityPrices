@@ -118,6 +118,10 @@ public class EntsoEApiService
         //     Console.WriteLine($"- Timestamp: {price.Timestamp}, Price: {price.Price} EUR/MWh");
         // }
 
-        return new ElectricityPrices { Prices = prices };
+        return new ElectricityPrices
+        {
+            Prices = prices,
+            Date = startTime
+        };
     }
 }
