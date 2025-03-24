@@ -1,28 +1,46 @@
 ﻿@model ElectricityPricesApp.Models.ElectricityPrices
 
-<!-- Date range selection form -->
-<form method="post" asp-action="Index">
-    <div class="form-group">
-        <label for="StartDate">Start Date & Time:</label>
-        <input type="datetime-local" id="StartDate" name="StartDate" class="form-control" value="@ViewData["StartDate"]" required />
+<!-- Main Container -->
+<div class="container mt-5">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col text-center">
+            <h2 class="display-4 text-primary">📈 Day-Ahead Electricity Prices in Austria</h2>
+            <p class="lead">Data for: @Model.Date.ToString("yyyy-MM-dd")</p>
+        </div>
     </div>
 
-    @* <div class="form-group"> *@
-    @*     <label for="EndDate">End Date & Time:</label> *@
-    @*     <input type="datetime-local" id="EndDate" name="EndDate" class="form-control" value="@ViewData["EndDate"]" required /> *@
-    @* </div> *@
+    <!-- Chart Section -->
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-body">
+                    <div style="width: 100%; height: 400px;">
+                        <canvas id="priceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <button type="submit" class="btn btn-primary">Fetch Prices</button>
-</form>
-
-
-@* Chart showing price for electricity *@
-<div style="width: 100%; margin: auto;">
-    <h2>📈 Day-Ahead Prices in Austria </h2>
-
-    <!-- Chart Placeholder -->
-    <div style="width: 100%; height: 400px;">
-        <canvas id="priceChart"></canvas>
+    <!-- Date Selection Form Section -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white text-center">
+                    <h5 class="mb-0">Select Date</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="Index">
+                        <div class="form-group">
+                            <label for="StartDate">Start Date:</label>
+                            <input type="date" id="StartDate" name="StartDate" class="form-control" value="@ViewData["StartDate"]" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Fetch Prices</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -49,7 +67,8 @@
                     borderColor: 'rgba(75, 192, 192, 1)',
                     backgroundColor: 'rgba(75, 192, 192, 0.2)',
                     borderWidth: 2,
-                    pointRadius: 3,
+                    pointRadius: 4,
+                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
                     tension: 0.3
                 }]
             },
@@ -72,28 +91,6 @@
                             maxRotation: 90,
                             minRotation: 45
                         },
-                    },
-                    // Secondary X-Axis for Dates (yyyy-MM-dd)
-                    x2: {
-                        position: 'bottom', // Position it at the bottom
-                        grid: {
-                            drawOnChartArea: false  // Disable grid lines for this axis
-                        },
-                        ticks: {
-                            // Show every 144th date tick
-                            callback: function(value, index, values) {
-                                // Show the date only for every 144th tick
-                                if (index % 144 === 0) {
-                                    return dates[index];
-                                }
-                                return ''; // Return empty string for other dates
-                            },
-                            maxRotation: 90,
-                            minRotation: 45
-                        },
-                        title: {
-                            display: false  // No need to display title for the second x-axis
-                        }
                     },
                     y: {
                         title: {

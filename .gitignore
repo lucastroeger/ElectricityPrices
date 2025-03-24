@@ -38,3 +38,5 @@ Thumbs.db
 
 # Other files #
 appsettings.Development.json
+**/.idea/workspace.xml 
+**/.idea/tasks.xml
