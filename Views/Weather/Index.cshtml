@@ -1,3 +1,4 @@
+@using System.Globalization
 @model WeatherForecast
 
 <!DOCTYPE html>
@@ -5,107 +6,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Forecast</title>
+    <title>Weather Forecast - Temperature, Wind Speed, and Radiation</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Weather Forecast - Temperature, Wind Speed, and Radiation</h1>
+<h1>Weather Forecast - Temperature, Wind Speed, and Radiation</h1>
 
-    <h2 id="coordinatesSubtitle">
-        Selected Coordinates: @Model.Latitude.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), @Model.Longitude.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)
-    </h2>
+<!-- User input for latitude and longitude -->
+<div>
+    <label for="latitudeInput">Latitude:</label>
+    <input type="text" id="latitudeInput" step="any" placeholder="Enter latitude" oninput="updateCoordinates()"
+           value="@Model.Latitude" />
+</div>
+<div>
+    <label for="longitudeInput">Longitude:</label>
+    <input type="text" id="longitudeInput" step="any" placeholder="Enter longitude" oninput="updateCoordinates()"
+           value="@Model.Longitude" />
+</div>
 
-    <canvas id="weatherChart" width="400" height="200"></canvas>
+<!-- Subtitle displaying selected coordinates -->
+<h2 id="selectedCoordinates">
+    Selected Coordinates: @Model.Latitude.ToString("F2",CultureInfo.InvariantCulture), @Model.Longitude.ToString("F2",CultureInfo.InvariantCulture)
+</h2>
 
-        <script>
-            window.onload = function() {
-                var ctx = document.getElementById('weatherChart').getContext('2d');
+<!-- Form to post the selected coordinates and fetch new data -->
+<form id="coordinatesForm" method="post" asp-action="Index">
+    <input type="hidden" step="any" id="latitude" name="latitude" value="@Model.Latitude" />
+    <input type="hidden" step="any" id="longitude" name="longitude" value="@Model.Longitude" />
+    <button type="submit">Get Weather</button>
+</form>
 
-                // Extract data from the model
-                var times = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Minutely15.Time.Select(t => t.ToString("yyyy-MM-dd HH:mm")).ToList()));
-                var temperatureData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Minutely15.Temperature2m));
-                var windSpeedData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Minutely15.WindSpeed10m));
-                var radiationData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Minutely15.ShortwaveRadiation));
+<canvas id="weatherChart" width="400" height="200"></canvas>
 
-                // Create the chart
-                var weatherChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: times, // x-axis labels (date and time)
-                        datasets: [{
-                            label: 'Temperature (°C)', // y-axis data label for temperature
-                            data: temperatureData, // temperature data
-                            borderColor: 'rgb(255, 99, 132)', // line color for temperature
-                            backgroundColor: 'rgba(255, 99, 132, 0.2)', // area color for temperature
-                            fill: false,
-                            yAxisID: 'y1' // link this dataset to the first y-axis (temperature)
-                        },
-                        {
-                            label: 'Wind Speed (m/s)', // y-axis data label for wind speed
-                            data: windSpeedData, // wind speed data
-                            borderColor: 'rgb(54, 162, 235)', // line color for wind speed
-                            backgroundColor: 'rgba(54, 162, 235, 0.2)', // area color for wind speed
-                            fill: false,
-                            yAxisID: 'y2' // link this dataset to the second y-axis (wind speed)
-                        },
-                        {
-                            label: 'Radiation (W/m²)', // y-axis data label for radiation
-                            data: radiationData, // radiation data
-                            borderColor: 'rgb(75, 192, 192)', // line color for radiation
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)', // area color for radiation
-                            fill: false,
-                            yAxisID: 'y3' // link this dataset to the third y-axis (radiation)
-                        }]
+<script>
+    window.onload = function() {
+        // Initialize chart and other data (assume Model data is available)
+        var ctx = document.getElementById('weatherChart').getContext('2d');
+        var times = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Minutely15.Time.Select(t => t.ToString("yyyy-MM-dd HH:mm")).ToList()));
+        var temperatureData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Minutely15.Temperature2m));
+        var windSpeedData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Minutely15.WindSpeed10m));
+        var radiationData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Minutely15.ShortwaveRadiation));
+
+        var weatherChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: times,
+                datasets: [{
+                    label: 'Temperature (°C)',
+                    data: temperatureData,
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    fill: false,
+                    yAxisID: 'y1'
+                },
+                    {
+                        label: 'Wind Speed (m/s)',
+                        data: windSpeedData,
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        fill: false,
+                        yAxisID: 'y2'
                     },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            x: {
-                                type: 'category',
-                                title: {
-                                    display: true,
-                                    text: 'Date and Time'
-                                },
-                                ticks: {
-                                    autoSkip: true,
-                                    maxTicksLimit: 20 // You can adjust this depending on how many labels you want visible
-                                }
-                            },
-                            y1: { // Temperature Y-axis
-                                type: 'linear',
-                                position: 'left',
-                                title: {
-                                    display: true,
-                                    text: 'Temperature (°C)'
-                                }
-                            },
-                            y2: { // Wind Speed Y-axis
-                                type: 'linear',
-                                position: 'right',
-                                title: {
-                                    display: true,
-                                    text: 'Wind Speed (m/s)'
-                                },
-                                grid: {
-                                    drawOnChartArea: false // Hide the grid lines for the second Y-axis
-                                }
-                            },
-                            y3: { // Radiation Y-axis
-                                type: 'linear',
-                                position: 'right',
-                                title: {
-                                    display: true,
-                                    text: 'Radiation (W/m²)'
-                                },
-                                grid: {
-                                    drawOnChartArea: false // Hide the grid lines for the third Y-axis
-                                },
-                                offset: true // Make sure the radiation axis is offset from wind speed
-                            }
+                    {
+                        label: 'Radiation (W/m²)',
+                        data: radiationData,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        fill: false,
+                        yAxisID: 'y3'
+                    }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        type: 'category',
+                        title: {
+                            display: true,
+                            text: 'Date and Time'
+                        },
+                        ticks: {
+                            autoSkip: true,
+                            maxTicksLimit: 20
                         }
+                    },
+                    y1: {
+                        type: 'linear',
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Temperature (°C)'
+                        }
+                    },
+                    y2: {
+                        type: 'linear',
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Wind Speed (m/s)'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    },
+                    y3: {
+                        type: 'linear',
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Radiation (W/m²)'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        },
+                        offset: true
                     }
-                });
+                }
             }
-        </script>
-    </body>
-    </html>
+        });
+    };
+
+    // Update coordinates and send them to form inputs
+    function updateCoordinates() {
+        var latitude = document.getElementById('latitudeInput').value;
+        var longitude = document.getElementById('longitudeInput').value;
+
+        // Check if the values are valid numbers before updating
+        if (!isNaN(latitude) && !isNaN(longitude)) {
+            // Update subtitle with selected coordinates
+            document.getElementById('selectedCoordinates').innerText = 'Selected Coordinates: ' + latitude + ', ' + longitude;
+
+            // Update form fields with selected coordinates
+            document.getElementById('latitude').value = latitude;
+            document.getElementById('longitude').value = longitude;
+        } else {
+            // Clear subtitle if coordinates are invalid
+            document.getElementById('selectedCoordinates').innerText = 'Selected Coordinates: ';
+        }
+    }
+</script>
+</body>
+</html>
