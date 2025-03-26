@@ -61,7 +61,8 @@ public class EntsoEApiService
 
         Console.WriteLine($"Found {timeSeriesList.Count} <TimeSeries> elements.");
 
-        // Select the first TimeSeries with PT15M resolution
+        // Select the first TimeSeries with PT15M resolution.
+        // NOTE: The first one gives the data for the current day, the second one gives the data for the following day
         var timeSeries = timeSeriesList
             .FirstOrDefault(ts => ts.Descendants(ns + "Period")
             .Any(period => (period.Element(ns + "resolution")?.Value ?? "") == "PT15M"));
@@ -86,14 +87,15 @@ public class EntsoEApiService
         var timeInterval = periodElement.Element(ns + "timeInterval");
         if (timeInterval != null)
         {
-            startTime = DateTime.Parse(timeInterval.Element(ns + "start")?.Value
+            startTime = DateTime.Parse(timeInterval.Element(ns + "start")?.Value    // This seems to be parsed to UTC+1
                 ?? throw new Exception("Start time missing"), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
         }
         else
         {
             throw new Exception("Missing <timeInterval> in TimeSeries.");
         }
-
+        
+        Console.WriteLine(timeInterval.Element(ns + "start")?.Value);
         Console.WriteLine($"⏳ Start Time: {startTime}");
 
         // Extract prices from <Point> elements

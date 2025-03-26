@@ -6,7 +6,6 @@ public class HomeController : Controller
 {
     private readonly SmardApiService _smardApiService;
     private readonly EntsoEApiService _entsoEApiService;
-
     public HomeController(SmardApiService smardApiService, EntsoEApiService entsoEApiService)
     {
         _smardApiService = smardApiService;

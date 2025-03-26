@@ -4,6 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient<SmardApiService>();
 builder.Services.AddHttpClient<EntsoEApiService>();
+builder.Services.AddHttpClient<OpenMeteoService>();
 
 var app = builder.Build();
 
