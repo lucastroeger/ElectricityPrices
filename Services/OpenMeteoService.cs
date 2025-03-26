@@ -10,11 +10,11 @@ public class OpenMeteoService
         _httpClient = httpClient;
     }
 
-    public async Task<WeatherForecast> GetWeatherForecastAsync(double latitude, double longitude)
+    public async Task<WeatherForecast> GetWeatherForecastAsync(string latitude, string longitude)
     {
         // Data from https://open-meteo.com/en/docs
         string requestUrl = $"https://api.open-meteo.com/v1/forecast?" +
-                            $"latitude={latitude.ToString(CultureInfo.InvariantCulture)}&longitude={longitude.ToString(CultureInfo.InvariantCulture)}" +
+                            $"latitude={latitude}&longitude={longitude}" +
                             $"&minutely_15=temperature_2m,wind_speed_10m,shortwave_radiation" +
                             $"&forecast_days=3";
 

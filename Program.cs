@@ -1,4 +1,13 @@
+using System.Globalization;
+
 var builder = WebApplication.CreateBuilder(args);
+
+
+// Apply the culture settings
+var cultureInfo = new CultureInfo("en-US");
+cultureInfo.NumberFormat.NumberDecimalSeparator = ".";
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
