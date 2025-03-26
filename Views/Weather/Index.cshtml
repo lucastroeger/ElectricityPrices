@@ -9,121 +9,103 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<h1>Weather Forecast - Temperature, Wind Speed, and Radiation</h1>
+    <h1>Weather Forecast - Temperature, Wind Speed, and Radiation</h1>
 
-<!-- Dropdown for selecting coordinates -->
-<div>
-    <label for="coordinates">Select Coordinates:</label>
-    <select id="coordinates" onchange="updateCoordinates()">
-        <option value="52.52,13.405">Berlin (52.52, 13.405)</option>
-        <option value="48.8566,2.3522">Paris (48.8566, 2.3522)</option>
-        <option value="51.5074,-0.1278">London (51.5074, -0.1278)</option>
-        <option value="40.7128,-74.0060">New York (40.7128, -74.0060)</option>
-    </select>
-</div>
+    <h2 id="coordinatesSubtitle">
+        Selected Coordinates: @Model.Latitude.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), @Model.Longitude.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)
+    </h2>
 
-<!-- Subtitle displaying selected coordinates -->
-<h2 id="selectedCoordinates">Selected Coordinates: 52.52, 13.405</h2>
+    <canvas id="weatherChart" width="400" height="200"></canvas>
 
-<canvas id="weatherChart" width="400" height="200"></canvas>
+        <script>
+            window.onload = function() {
+                var ctx = document.getElementById('weatherChart').getContext('2d');
 
-<script>
-    window.onload = function() {
-        var ctx = document.getElementById('weatherChart').getContext('2d');
+                // Extract data from the model
+                var times = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Minutely15.Time.Select(t => t.ToString("yyyy-MM-dd HH:mm")).ToList()));
+                var temperatureData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Minutely15.Temperature2m));
+                var windSpeedData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Minutely15.WindSpeed10m));
+                var radiationData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Minutely15.ShortwaveRadiation));
 
-        // Extract data from the model
-        var times = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Minutely15.Time.Select(t => t.ToString("yyyy-MM-dd HH:mm")).ToList()));
-        var temperatureData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Minutely15.Temperature2m));
-        var windSpeedData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Minutely15.WindSpeed10m));
-        var radiationData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Minutely15.ShortwaveRadiation));
-
-        // Create the chart
-        var weatherChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: times, // x-axis labels (date and time)
-                datasets: [{
-                    label: 'Temperature (°C)', // y-axis data label for temperature
-                    data: temperatureData, // temperature data
-                    borderColor: 'rgb(255, 99, 132)', // line color for temperature
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)', // area color for temperature
-                    fill: false,
-                    yAxisID: 'y1' // link this dataset to the first y-axis (temperature)
-                },
-                    {
-                        label: 'Wind Speed (m/s)', // y-axis data label for wind speed
-                        data: windSpeedData, // wind speed data
-                        borderColor: 'rgb(54, 162, 235)', // line color for wind speed
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)', // area color for wind speed
-                        fill: false,
-                        yAxisID: 'y2' // link this dataset to the second y-axis (wind speed)
-                    },
-                    {
-                        label: 'Radiation (W/m²)', // y-axis data label for radiation
-                        data: radiationData, // radiation data
-                        borderColor: 'rgb(75, 192, 192)', // line color for radiation
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)', // area color for radiation
-                        fill: false,
-                        yAxisID: 'y3' // link this dataset to the third y-axis (radiation)
-                    }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    x: {
-                        type: 'category',
-                        title: {
-                            display: true,
-                            text: 'Date and Time'
+                // Create the chart
+                var weatherChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: times, // x-axis labels (date and time)
+                        datasets: [{
+                            label: 'Temperature (°C)', // y-axis data label for temperature
+                            data: temperatureData, // temperature data
+                            borderColor: 'rgb(255, 99, 132)', // line color for temperature
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)', // area color for temperature
+                            fill: false,
+                            yAxisID: 'y1' // link this dataset to the first y-axis (temperature)
                         },
-                        ticks: {
-                            autoSkip: true,
-                            maxTicksLimit: 20 // You can adjust this depending on how many labels you want visible
+                        {
+                            label: 'Wind Speed (m/s)', // y-axis data label for wind speed
+                            data: windSpeedData, // wind speed data
+                            borderColor: 'rgb(54, 162, 235)', // line color for wind speed
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)', // area color for wind speed
+                            fill: false,
+                            yAxisID: 'y2' // link this dataset to the second y-axis (wind speed)
+                        },
+                        {
+                            label: 'Radiation (W/m²)', // y-axis data label for radiation
+                            data: radiationData, // radiation data
+                            borderColor: 'rgb(75, 192, 192)', // line color for radiation
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)', // area color for radiation
+                            fill: false,
+                            yAxisID: 'y3' // link this dataset to the third y-axis (radiation)
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                type: 'category',
+                                title: {
+                                    display: true,
+                                    text: 'Date and Time'
+                                },
+                                ticks: {
+                                    autoSkip: true,
+                                    maxTicksLimit: 20 // You can adjust this depending on how many labels you want visible
+                                }
+                            },
+                            y1: { // Temperature Y-axis
+                                type: 'linear',
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'Temperature (°C)'
+                                }
+                            },
+                            y2: { // Wind Speed Y-axis
+                                type: 'linear',
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Wind Speed (m/s)'
+                                },
+                                grid: {
+                                    drawOnChartArea: false // Hide the grid lines for the second Y-axis
+                                }
+                            },
+                            y3: { // Radiation Y-axis
+                                type: 'linear',
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Radiation (W/m²)'
+                                },
+                                grid: {
+                                    drawOnChartArea: false // Hide the grid lines for the third Y-axis
+                                },
+                                offset: true // Make sure the radiation axis is offset from wind speed
+                            }
                         }
-                    },
-                    y1: { // Temperature Y-axis
-                        type: 'linear',
-                        position: 'left',
-                        title: {
-                            display: true,
-                            text: 'Temperature (°C)'
-                        }
-                    },
-                    y2: { // Wind Speed Y-axis
-                        type: 'linear',
-                        position: 'right',
-                        title: {
-                            display: true,
-                            text: 'Wind Speed (m/s)'
-                        },
-                        grid: {
-                            drawOnChartArea: false // Hide the grid lines for the second Y-axis
-                        }
-                    },
-                    y3: { // Radiation Y-axis
-                        type: 'linear',
-                        position: 'right',
-                        title: {
-                            display: true,
-                            text: 'Radiation (W/m²)'
-                        },
-                        grid: {
-                            drawOnChartArea: false // Hide the grid lines for the third Y-axis
-                        },
-                        offset: true // Make sure the radiation axis is offset from wind speed
                     }
-                }
+                });
             }
-        });
-    }
-
-    // Function to update the coordinates display based on dropdown selection
-    function updateCoordinates() {
-        var select = document.getElementById('coordinates');
-        var selectedOption = select.value;
-        var coordinates = selectedOption.split(',');
-        document.getElementById('selectedCoordinates').innerText = 'Selected Coordinates: ' + coordinates[0] + ', ' + coordinates[1];
-    }
-</script>
-</body>
-</html>
+        </script>
+    </body>
+    </html>

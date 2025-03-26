@@ -21,7 +21,7 @@ public class WeatherController : Controller
             return View("Error");
         }
         
-        return View(weatherData.FirstOrDefault());
+        return View(weatherData);
     }
 }
 

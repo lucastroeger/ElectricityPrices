@@ -1,3 +1,4 @@
+using System.Globalization;
 using Newtonsoft.Json;
 
 public class OpenMeteoService
@@ -9,11 +10,11 @@ public class OpenMeteoService
         _httpClient = httpClient;
     }
 
-    public async Task<List<WeatherForecast>> GetWeatherForecastAsync(double latitude, double longitude)
+    public async Task<WeatherForecast> GetWeatherForecastAsync(double latitude, double longitude)
     {
         // Data from https://open-meteo.com/en/docs
         string requestUrl = $"https://api.open-meteo.com/v1/forecast?" +
-                            $"latitude={latitude}&longitude={longitude}" +
+                            $"latitude={latitude.ToString(CultureInfo.InvariantCulture)}&longitude={longitude.ToString(CultureInfo.InvariantCulture)}" +
                             $"&minutely_15=temperature_2m,wind_speed_10m,shortwave_radiation" +
                             $"&forecast_days=3";
 
@@ -23,7 +24,7 @@ public class OpenMeteoService
         var response = await _httpClient.GetStringAsync(requestUrl);
         
         // Deserialize the JSON response into a WeatherForecast object
-        var weatherForecast = JsonConvert.DeserializeObject<List<WeatherForecast>>(response);
+        var weatherForecast = JsonConvert.DeserializeObject<WeatherForecast>(response);
         
         return weatherForecast;
     }
