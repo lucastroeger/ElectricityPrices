@@ -132,7 +132,7 @@
         var longitude = document.getElementById('longitudeInput').value;
 
         // Check if the values are valid numbers before updating
-        if (!isNaN(latitude) && !isNaN(longitude)) {
+        if (!isNaN(latitude) && !isNaN(longitude) && longitude < 90 && longitude > -90 && latitude < 90 && latitude > -90) {
             // Update subtitle with selected coordinates
             document.getElementById('selectedCoordinates').innerText = 'Selected Coordinates: ' + latitude + ', ' + longitude;
 

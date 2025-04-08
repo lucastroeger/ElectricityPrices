@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ElectricityPricesApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3a87ffdb00383fb52945330dad4058efe6103818")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+866a68ed4a46b0930856e52b7aae7080263f7323")]
 [assembly: System.Reflection.AssemblyProductAttribute("ElectricityPricesApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ElectricityPricesApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

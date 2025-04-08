@@ -21,11 +21,12 @@ public class EntsoEApiService
     public async Task<ElectricityPrices> GetDayAheadPricesAsync(DateTime startDate,
         string biddingZone)
     {
-        const string baseUrl = "https://web-api.tp.entsoe.eu/api";
+        // See https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide_prod_backup_06_11_2024.html
+        const string baseUrl = "https://web-api.tp.entsoe.eu/api?";
         string start = startDate.ToString("yyyyMMddHHmm");
         string end = startDate.AddDays(1).ToString("yyyyMMddHHmm");
 
-        string requestUrl = $"{baseUrl}?" +
+        string requestUrl = $"{baseUrl}" +
                             $"documentType=A44" +
                             $"&periodStart={start}" +
                             $"&periodEnd={end}" +
