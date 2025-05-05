@@ -43,3 +43,4 @@ appsettings.Development.json
 .venv/
 bin/
 obj/
+*.DotSettings.user
