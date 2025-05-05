@@ -40,3 +40,4 @@ Thumbs.db
 appsettings.Development.json
 **/.idea/workspace.xml 
 **/.idea/tasks.xml
+.venv/
