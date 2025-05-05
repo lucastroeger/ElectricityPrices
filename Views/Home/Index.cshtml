@@ -1,19 +1,62 @@
-﻿@model ElectricityPricesApp.Models.ElectricityPrices
+﻿@model ElectricityPricesApp.Models.DashboardViewModel
 
 <!-- Main Container -->
-<div class="container mt-5">
+<div class="container-fluid mt-4">
     <!-- Header Section -->
     <div class="row mb-4">
         <div class="col text-center">
-            <h2 class="display-4 text-primary">📈 Day-Ahead Electricity Prices</h2>
-            <p class="lead">Data for: @Model.Date.ToString("yyyy-MM-dd") in @ViewData["BiddingZone"]</p>
+            <h2 class="display-4 text-primary">📈 Energy Dashboard</h2>
+            <p class="lead">Day-Ahead Electricity Prices and Weather Data for @Model.Date.ToString("yyyy-MM-dd")</p>
         </div>
     </div>
 
-    <!-- Chart Section -->
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-lg">
+    <!-- Controls Section -->
+    <div class="row mb-4">
+        <div class="col-md-6 offset-md-3">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Select Parameters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="Index" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="BiddingZone" class="form-label">Bidding Zone:</label>
+                            <select id="BiddingZone" name="BiddingZone" class="form-select" required>
+                                <option value="" disabled selected hidden>Select</option>
+                                <option value="10Y1001A1001A82H">10Y1001A1001A82H (BZN|DE-LU)</option>
+                                <option value="10YAT-APG------L">10YAT-APG------L (BZN|AT)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="StartDate" class="form-label">Date:</label>
+                            <input type="date" id="StartDate" name="StartDate" class="form-control" value="@Model.Date.ToString("yyyy-MM-dd")" required />
+                        </div>
+                        <div class="col-12">
+                            <label for="SelectedLocation" class="form-label">Location:</label>
+                            <select id="SelectedLocation" name="SelectedLocation" class="form-select" required>
+                                @foreach (var location in Model.AvailableLocations)
+                                {
+                                    <option value="@location.Name" selected="@(location.Name == Model.SelectedLocation)">@location.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary w-100">Update Dashboard</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row">
+        <!-- Electricity Prices Chart -->
+        <div class="col-md-8 mb-4">
+            <div class="card shadow-lg h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Electricity Prices for @ViewData["BiddingZone"]</h5>
+                </div>
                 <div class="card-body">
                     <div style="width: 100%; height: 400px;">
                         <canvas id="priceChart"></canvas>
@@ -21,94 +64,291 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Bidding Zone Selection -->
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white text-center">
-                    <h5 class="mb-0">Select Bidding Zone and Date</h5>
+        <!-- Weather Data -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-lg h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Weather Forecast for @Model.SelectedLocation</h5>
                 </div>
                 <div class="card-body">
-                    <form method="post" asp-action="Index">
-                        <div class="form-group">
-                            <label for="BiddingZone">Bidding Zone:</label>
-                            <select id="BiddingZone" name="BiddingZone" class="form-control" required>
-                                <option value="" disabled selected hidden>Select</option>
-                                <option value="10Y1001A1001A82H">10Y1001A1001A82H (BZN|DE-LU)</option>
-                                <option value="10YAT-APG------L">10YAT-APG------L (BZN|AT)</option>
-                                <!-- Add more options here as needed -->
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="StartDate">Date:</label>
-                            <input type="date" id="StartDate" name="StartDate" class="form-control" value="@Model.Date.ToString("yyyy-MM-dd")" required />
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-block">Fetch Prices</button>
-                    </form>
+                    <div style="width: 100%; height: 400px;">
+                        <canvas id="weatherChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LSTM Prediction Section (Placeholder for future implementation) -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Price Predictions for @ViewData["BiddingZone"]</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> LSTM prediction integration coming soon!
+                    </div>
+                    <div style="width: 100%; height: 300px;">
+                        <canvas id="predictionChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://kit.fontawesome.com/your-code.js" crossorigin="anonymous"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Update location options when bidding zone changes
+            document.getElementById('BiddingZone').addEventListener('change', function() {
+                const biddingZone = this.value;
+                const locationSelect = document.getElementById('SelectedLocation');
+                locationSelect.innerHTML = ''; // Clear existing options
+                
+                // Add default option
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Select Location';
+                defaultOption.disabled = true;
+                defaultOption.selected = true;
+                defaultOption.hidden = true;
+                locationSelect.appendChild(defaultOption);
+                
+                // Add location options based on bidding zone
+                if (biddingZone === '10Y1001A1001A82H') {
+                    addLocationOption('Frankfurt');
+                    addLocationOption('Berlin');
+                    addLocationOption('Munich');
+                    addLocationOption('Luxembourg City');
+                } else if (biddingZone === '10YAT-APG------L') {
+                    addLocationOption('Vienna');
+                    addLocationOption('Graz');
+                    addLocationOption('Linz');
+                    addLocationOption('Salzburg');
+                }
+            });
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const ctx = document.getElementById('priceChart').getContext('2d');
+            function addLocationOption(locationName) {
+                const option = document.createElement('option');
+                option.value = locationName;
+                option.textContent = locationName;
+                document.getElementById('SelectedLocation').appendChild(option);
+            }
 
-        // Retrieve the times, dates, and prices
-        const times = @Html.Raw(Json.Serialize(Model.Prices.Select(p => p.Timestamp.ToString("HH:mm")).ToList()));
-        const dates = @Html.Raw(Json.Serialize(Model.Prices.Select(p => p.Timestamp.ToString("yyyy-MM-dd")).ToList()));
-        const prices = @Html.Raw(Json.Serialize(Model.Prices.Select(p => p.Price).ToList()));
+            // Electricity Prices Chart
+            const priceCtx = document.getElementById('priceChart').getContext('2d');
+            const times = @Html.Raw(Json.Serialize(Model.ElectricityPrices.Prices.Select(p => p.Timestamp.ToString("HH:mm")).ToList()));
+            const prices = @Html.Raw(Json.Serialize(Model.ElectricityPrices.Prices.Select(p => p.Price).ToList()));
 
-        // Create a new chart
-        new Chart(ctx, {
-            type: 'line',  // Line chart
-            data: {
-                labels: times,  // Use only the time for the primary x-axis
-                datasets: [{
-                    label: 'Electricity Price (€/MWh)',
-                    data: prices,
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderWidth: 2,
-                    pointRadius: 4,
-                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    }
+            new Chart(priceCtx, {
+                type: 'line',
+                data: {
+                    labels: times,
+                    datasets: [{
+                        label: 'Electricity Price (€/MWh)',
+                        data: prices,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        tension: 0.3
+                    }]
                 },
-                scales: {
-                    // Primary X-Axis for Time (HH:mm)
-                    x: {
-                        title: {
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
                             display: true,
-                            text: 'Time (UTC)'
-                        },
-                        ticks: {
-                            maxRotation: 90,
-                            minRotation: 45
-                        },
+                            position: 'top'
+                        }
                     },
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Price (€/MWh)'
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time (UTC)'
+                            },
+                            ticks: {
+                                maxRotation: 90,
+                                minRotation: 45
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Price (€/MWh)'
+                            }
                         }
                     }
                 }
-            }
+            });
+
+            // Weather Chart
+            const weatherCtx = document.getElementById('weatherChart').getContext('2d');
+            const weatherTimes = @Html.Raw(Json.Serialize(Model.WeatherForecast.Minutely15.Time.Select(t => t.ToString("HH:mm")).ToList()));
+            const temperatures = @Html.Raw(Json.Serialize(Model.WeatherForecast.Minutely15.Temperature2m));
+            const windSpeeds = @Html.Raw(Json.Serialize(Model.WeatherForecast.Minutely15.WindSpeed10m));
+            const radiation = @Html.Raw(Json.Serialize(Model.WeatherForecast.Minutely15.ShortwaveRadiation));
+
+            new Chart(weatherCtx, {
+                type: 'line',
+                data: {
+                    labels: weatherTimes,
+                    datasets: [
+                        {
+                            label: 'Temperature (°C)',
+                            data: temperatures,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            tension: 0.3,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Wind Speed (m/s)',
+                            data: windSpeeds,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            tension: 0.3,
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: 'Solar Radiation (W/m²)',
+                            data: radiation,
+                            borderColor: 'rgba(255, 206, 86, 1)',
+                            backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            tension: 0.3,
+                            yAxisID: 'y2'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time (UTC)'
+                            },
+                            ticks: {
+                                maxRotation: 90,
+                                minRotation: 45
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Temperature (°C)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Wind Speed (m/s)'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        },
+                        y2: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Solar Radiation (W/m²)'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Prediction Chart (Placeholder for LSTM predictions)
+            const predictionCtx = document.getElementById('predictionChart').getContext('2d');
+            new Chart(predictionCtx, {
+                type: 'line',
+                data: {
+                    labels: times,
+                    datasets: [
+                        {
+                            label: 'Actual Prices',
+                            data: prices,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Predicted Prices',
+                            data: [], // Will be populated with LSTM predictions
+                            borderColor: 'rgba(255, 159, 64, 1)',
+                            backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            tension: 0.3,
+                            borderDash: [5, 5]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time (UTC)'
+                            },
+                            ticks: {
+                                maxRotation: 90,
+                                minRotation: 45
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Price (€/MWh)'
+                            }
+                        }
+                    }
+                }
+            });
         });
-    });
-</script>
+    </script>
+}

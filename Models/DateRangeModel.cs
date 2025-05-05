@@ -6,5 +6,6 @@ namespace ElectricityPricesApp.Models
         public DateTime EndDate { get; set; }
         
         public string BiddingZone { get; set; }
+        public string SelectedLocation { get; set; }
     }
 }
